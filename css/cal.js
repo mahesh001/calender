@@ -5350,11 +5350,6 @@ function DayEventRenderer() {
 
 		return subrows;
 	}
-
-
-	// Return an array of jQuery objects for the placeholder content containers of each row.
-	// The content containers don't actually contain anything, but their dimensions should match
-	// the events that are overlaid on top.
 	function getRowContentElements() {
 		var i;
 		var rowCnt = getRowCnt();
@@ -5366,11 +5361,6 @@ function DayEventRenderer() {
 		return rowDivs;
 	}
 
-
-
-	/* Mouse Handlers
-	---------------------------------------------------------------------------------------------------*/
-	// TODO: better documentation!
 
 
 	function attachHandlers(segments, modifiedEventId) {
@@ -5396,14 +5386,12 @@ function DayEventRenderer() {
 		}
 
 		if (
-			segment.isEnd && // only allow resizing on the final segment for an event
+			segment.isEnd && 
 			isEventResizable(event)
 		) {
-			t.resizableDayEvent(event, eventElement, segment); // use `t` so subclasses can override
+			t.resizableDayEvent(event, eventElement, segment); 
 		}
 
-		// attach all other handlers.
-		// needs to be after, because resizableDayEvent might stopImmediatePropagation on click
 		eventElementHandlers(event, eventElement);
 	}
 
@@ -5442,7 +5430,7 @@ function DayEventRenderer() {
 				if (dayDelta) {
 					eventDrop(this, event, dayDelta, 0, event.allDay, ev, ui);
 				}else{
-					eventElement.css('filter', ''); // clear IE opacity side-effects
+					eventElement.css('filter', ''); 
 					showEvents(event, eventElement);
 				}
 			}
@@ -5453,26 +5441,25 @@ function DayEventRenderer() {
 	function resizableDayEvent(event, element, segment) {
 		var isRTL = opt('isRTL');
 		var direction = isRTL ? 'w' : 'e';
-		var handle = element.find('.ui-resizable-' + direction); // TODO: stop using this class because we aren't using jqui for this
+		var handle = element.find('.ui-resizable-' + direction); 
 		var isResizing = false;
 		
-		// TODO: look into using jquery-ui mouse widget for this stuff
-		disableTextSelection(element); // prevent native <a> selection for IE
+		disableTextSelection(element); 
 		element
-			.mousedown(function(ev) { // prevent native <a> selection for others
+			.mousedown(function(ev) { 
 				ev.preventDefault();
 			})
 			.click(function(ev) {
 				if (isResizing) {
-					ev.preventDefault(); // prevent link from being visited (only method that worked in IE6)
-					ev.stopImmediatePropagation(); // prevent fullcalendar eventClick handler from being called
-					                               // (eventElementHandlers needs to be bound after resizableDayEvent)
+					ev.preventDefault(); 
+					ev.stopImmediatePropagation(); 
+					                               
 				}
 			});
 		
 		handle.mousedown(function(ev) {
 			if (ev.which != 1) {
-				return; // needs to be left mouse button
+				return; 
 			}
 			isResizing = true;
 			var hoverListener = getHoverListener();
@@ -5494,7 +5481,6 @@ function DayEventRenderer() {
 					var origCellOffset = cellToCellOffset(origCell);
 					var cellOffset = cellToCellOffset(cell);
 
-					// don't let resizing move earlier than start date cell
 					cellOffset = Math.max(cellOffset, minCellOffset);
 
 					dayDelta =
@@ -5506,7 +5492,7 @@ function DayEventRenderer() {
 						var oldHelpers = helpers;
 
 						helpers = renderTempDayEvent(eventCopy, segment.row, elementTop);
-						helpers = $(helpers); // turn array into a jQuery object
+						helpers = $(helpers); 
 
 						helpers.find('*').css('cursor', direction + '-resize');
 						if (oldHelpers) {
@@ -5523,11 +5509,9 @@ function DayEventRenderer() {
 						}
 					}
 					clearOverlays();
-					renderDayOverlay( // coordinate grid already rebuilt with hoverListener.start()
+					renderDayOverlay( 
 						event.start,
 						addDays( exclEndDay(event), dayDelta )
-						// TODO: instead of calling renderDayOverlay() with dates,
-						// call _renderDayOverlay (or whatever) with cell offsets.
 					);
 				}
 			}, ev);
@@ -5539,11 +5523,10 @@ function DayEventRenderer() {
 				clearOverlays();
 				if (dayDelta) {
 					eventResize(this, event, dayDelta, 0, ev);
-					// event redraw will clear helpers
+					
 				}
-				// otherwise, the drag handler already restored the old events
 				
-				setTimeout(function() { // make this happen after the element's click event
+				setTimeout(function() { 
 					isResizing = false;
 				},0);
 			}
@@ -5553,10 +5536,6 @@ function DayEventRenderer() {
 
 }
 
-
-
-/* Generalized Segment Utilities
--------------------------------------------------------------------------------------------------*/
 
 
 function isDaySegmentCollision(segment, otherSegments) {
@@ -5573,7 +5552,7 @@ function isDaySegmentCollision(segment, otherSegments) {
 }
 
 
-function segmentElementEach(segments, callback) { // TODO: use in AgendaView?
+function segmentElementEach(segments, callback) { 
 	for (var i=0; i<segments.length; i++) {
 		var segment = segments[i];
 		var element = segment.element;
@@ -5584,8 +5563,6 @@ function segmentElementEach(segments, callback) { // TODO: use in AgendaView?
 }
 
 ;;
-
-//BUG: unselect needs to be triggered when events are dragged+dropped
 
 function SelectionManager() {
 	var t = this;
@@ -5616,7 +5593,7 @@ function SelectionManager() {
 		$(document).mousedown(function(ev) {
 			var ignore = opt('unselectCancel');
 			if (ignore) {
-				if ($(ev.target).parents(ignore).length) { // could be optimized to stop after first match
+				if ($(ev.target).parents(ignore).length) { 
 					return;
 				}
 			}
@@ -5650,16 +5627,16 @@ function SelectionManager() {
 	}
 	
 	
-	function daySelectionMousedown(ev) { // not really a generic manager method, oh well
+	function daySelectionMousedown(ev) { 
 		var cellToDate = t.cellToDate;
 		var getIsCellAllDay = t.getIsCellAllDay;
 		var hoverListener = t.getHoverListener();
-		var reportDayClick = t.reportDayClick; // this is hacky and sort of weird
-		if (ev.which == 1 && opt('selectable')) { // which==1 means left mouse button
-			unselect(ev);
+		var reportDayClick = t.reportDayClick; 
+		if (ev.which == 1 && opt('selectable')) { 
+					unselect(ev);
 			var _mousedownElement = this;
 			var dates;
-			hoverListener.start(function(cell, origCell) { // TODO: maybe put cellToDate/getIsCellAllDay info in cell
+			hoverListener.start(function(cell, origCell) { 
 				clearSelection();
 				if (cell && getIsCellAllDay(cell)) {
 					dates = [ cellToDate(origCell), cellToDate(cell) ].sort(dateCompare);
@@ -5818,11 +5795,6 @@ function HoverListener(coordinateGrid) {
 }
 
 
-
-// this fix was only necessary for jQuery UI 1.8.16 (and jQuery 1.7 or 1.7.1)
-// upgrading to jQuery UI 1.8.17 (and using either jQuery 1.7 or 1.7.1) fixed the problem
-// but keep this in here for 1.8.16 users
-// and maybe remove it down the line
 
 function _fixUIEvent(event) { // for issue 1168
 	if (event.pageX === undefined) {
